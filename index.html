@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#e9e1d2">
+  <meta name="description" content="Исследуйте BFS, алгоритм Дейкстры и A*: редактируйте поле, добавляйте препятствия, наблюдайте поиск по шагам и сравнивайте маршруты.">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:title" content="PATHLAB — визуализатор поиска пути">
+  <meta property="og:description" content="Редактируйте карту и наблюдайте, как BFS, Дейкстра и A* ищут путь шаг за шагом.">
+  <title>PATHLAB — визуализатор поиска пути</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"PATHLAB — визуализатор поиска пути","applicationCategory":"EducationalApplication","operatingSystem":"Any","inLanguage":"ru","description":"Интерактивная визуализация BFS, поиска Дейкстры и A* на редактируемой сетке."}</script>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="PATHLAB — главная"><span class="brand-symbol" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>pathlab</span></a>
+      <div class="topbar-note"><span class="live-dot"></span><span>АТЛАС ПОИСКА ПУТИ</span></div>
+      <button id="resetBoard" class="reset-link" type="button"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 9.5a6 6 0 1 1 1.2 4M4 4v5h5"/></svg><span>Новое поле</span></button>
+    </header>
+    <section class="intro">
+      <div><p class="eyebrow">КАРТА НЕИЗВЕДАННОГО</p><h1>Прокладывай путь<br class="desktop-break"> сквозь поле.</h1><p class="intro-copy">Расставь стены и сложный рельеф. Сравни, как алгоритмы выберут дорогу.</p></div>
+      <aside class="hero-note" aria-label="Одна карта для трёх стратегий"><span>ОДНА КАРТА</span><i></i><span>ТРИ СТРАТЕГИИ</span><strong>BFS <b>·</b> Дейкстра <b>·</b> A*</strong></aside>
+    </section>
+    <section class="workbench" aria-label="Настройки и карта поиска пути">
+      <div class="board-panel">
+        <div class="board-head"><div class="board-title"><span class="panel-kicker">МАРШРУТНАЯ СЕТКА</span><h2>Поле исследования</h2></div><div class="board-size"><span id="boardDimensions">21 × 13</span><span class="board-size-dot"></span><span id="neighborMode">4 направления</span></div></div>
+        <div class="toolbar" role="toolbar" aria-label="Инструменты поля"><span class="tool-caption">ИНСТРУМЕНТЫ</span><div class="tool-list">
+          <button class="tool-button is-active" type="button" data-tool="wall" aria-pressed="true"><i class="tool-icon wall-icon"></i>Стены</button>
+          <button class="tool-button" type="button" data-tool="mud" aria-pressed="false"><i class="tool-icon mud-icon"></i>Рельеф ×5</button>
+          <button class="tool-button" type="button" data-tool="erase" aria-pressed="false"><i class="tool-icon erase-icon"></i>Ластик</button>
+          <button class="tool-button marker-tool" type="button" data-tool="start" aria-pressed="false"><i class="tool-icon start-icon">S</i>Старт</button>
+          <button class="tool-button marker-tool" type="button" data-tool="end" aria-pressed="false"><i class="tool-icon end-icon">E</i>Финиш</button>
+        </div><span class="draw-hint" id="drawHint">Нажми и веди, чтобы рисовать</span></div>
+        <div class="grid-frame"><div id="grid" class="grid" role="grid" aria-label="Поле поиска пути. Стрелки выбирают клетку, пробел применяет инструмент." tabindex="0"></div><div class="grid-coordinates" aria-hidden="true"><span>01</span><span>21</span></div></div>
+        <div class="legend"><span><i class="legend-start"></i>Старт</span><span><i class="legend-finish"></i>Финиш</span><span><i class="legend-frontier"></i>В очереди</span><span><i class="legend-visited"></i>Проверено</span><span><i class="legend-path"></i>Маршрут</span><span><i class="legend-mud"></i>Цена 5</span></div>
+        <div class="board-foot"><span><kbd>← ↑ → ↓</kbd> выбрать клетку · <kbd>Пробел</kbd> рисовать</span><button id="clearBoard" class="clear-board" type="button">Очистить поле</button></div>
+      </div>
+      <aside class="control-panel" aria-label="Параметры поиска">
+        <section class="algorithm-section"><div class="section-heading"><span class="panel-kicker">СТРАТЕГИЯ ПОИСКА</span></div>
+          <div class="algorithm-list" role="group" aria-label="Выбрать алгоритм">
+            <button class="algorithm-option" data-algorithm="bfs" type="button" aria-pressed="false"><span class="algorithm-letter">B</span><span class="algorithm-copy"><strong>BFS</strong><small>Волновой поиск</small></span><span class="algorithm-check">✓</span></button>
+            <button class="algorithm-option" data-algorithm="dijkstra" type="button" aria-pressed="false"><span class="algorithm-letter">D</span><span class="algorithm-copy"><strong>Дейкстра</strong><small>Минимальная цена</small></span><span class="algorithm-check">✓</span></button>
+            <button class="algorithm-option is-selected" data-algorithm="astar" type="button" aria-pressed="true"><span class="algorithm-letter">A</span><span class="algorithm-copy"><strong>A*</strong><small>Цель + цена пути</small></span><span class="algorithm-check">✓</span></button>
+          </div>
+          <p id="algorithmDescription" class="algorithm-description">Оценивает расстояние до финиша и стоимость уже пройденного пути.</p>
+          <label class="diagonal-toggle"><span class="toggle-copy"><strong>Диагональный шаг</strong><small id="diagonalHint">Движение по 4 соседям</small></span><input id="diagonalToggle" type="checkbox"><span class="toggle-track"></span></label>
+        </section>
+        <section class="run-section"><div class="section-heading"><span class="panel-kicker">ПРОХОЖДЕНИЕ</span><span id="runStatus" class="run-status"><i></i>ГОТОВ</span></div>
+          <div class="run-buttons"><button id="runButton" class="run-button" type="button"><span class="play-symbol">▶</span><span>Найти путь</span></button><button id="stepButton" class="step-button" type="button" title="Показать следующий шаг" aria-label="Показать следующий шаг">|›</button></div>
+          <button id="pauseButton" class="pause-button" type="button" hidden><span>Ⅱ</span> Пауза</button>
+          <div class="speed-row"><label for="speedRange">Скорость</label><input id="speedRange" type="range" min="1" max="12" value="5"><output id="speedValue" for="speedRange">×5</output></div>
+          <div class="run-progress"><span id="runProgress"></span></div>
+        </section>
+        <section class="result-section"><div class="section-heading"><span class="panel-kicker">ИТОГ ПОИСКА</span></div>
+          <h2 class="sr-only">Результат поиска</h2><div class="result-grid"><div class="result-stat"><strong id="visitedCount">0</strong><span>проверено</span></div><div class="result-stat"><strong id="pathLength">—</strong><span id="pathMetricLabel">шагов</span></div><div class="result-stat"><strong id="pathCost">—</strong><span>стоимость</span></div></div>
+          <p class="result-message" id="resultMessage">Поле готово. Запусти поиск или покажи один шаг.</p>
+        </section>
+        <section class="compare-section"><div class="compare-heading"><div><span class="panel-kicker">СРАВНЕНИЕ</span><h2>Кто найдёт лучше?</h2></div><button id="compareButton" class="compare-trigger" type="button">Сравнить</button></div><p class="compare-help">Сравни проверенные клетки, длину и реальную цену найденного маршрута.</p><div id="comparisonTable" class="comparison-table" hidden></div></section>
+      </aside>
+    </section>
+    <footer class="page-footer"><span>PATHLAB <i></i> КАРТА ПОИСКА ПУТИ</span><span>Кликни по клетке или веди курсором, чтобы рисовать</span></footer>
+  </main>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js" defer></script>
+</body>
+</html>
