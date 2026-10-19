@@ -66,6 +66,7 @@
   function clearSearch() {
     stopTimer();
     search = null;
+    $('#exportRouteButton').disabled = true;
     eventIndex = 0;
     visual.frontier.clear(); visual.visited.clear(); visual.path.clear();
     setStatus('ready');
@@ -261,6 +262,29 @@
     setStatus(search?.found ? 'done' : 'error');
     if (search?.found) $message.textContent = `${algorithms[algorithm].name}: ${search.expanded} клеток проверено · маршрут ${search.path.length - 1} шагов · цена ${formatCost(search.cost)}.`;
     else $message.textContent = 'Маршрут не найден. Измени карту и попробуй снова.';
+    $('#exportRouteButton').disabled = !search?.found;
+  }
+  function exportRoute() {
+    if (!search?.complete || !search.found) return;
+    const payload = {
+      format: 'pathlab-route-v1',
+      grid: { columns: COLS, rows: ROWS, movement: diagonal ? 8 : 4, coordinates: 'top-left origin, zero-based' },
+      algorithm,
+      start: xy(board.start),
+      finish: xy(board.end),
+      route: search.path.map(id => xy(id)),
+      obstacles: [...board.walls].map(id => xy(id)),
+      costlyTiles: [...board.mud].map(id => ({ ...xy(id), cost: WEIGHT })),
+      steps: search.path.length - 1,
+      cost: Number.isFinite(search.cost) ? Number(search.cost.toFixed(3)) : null
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'pathlab-route.json';
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
   function runTick() {
     const batch = Math.max(1, Math.ceil(Number($('#speedRange').value) / 3));
@@ -398,6 +422,7 @@
   $pause.addEventListener('click',pauseRun);
   $step.addEventListener('click',singleStep);
   $('#compareButton').addEventListener('click',compareAlgorithms);
+  $('#exportRouteButton').addEventListener('click',exportRoute);
   $('#clearBoard').addEventListener('click',clearBoard);
   $('#resetBoard').addEventListener('click',randomBoard);
   window.addEventListener('keydown',event => {

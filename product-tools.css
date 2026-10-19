@@ -1,0 +1,6 @@
+.route-export{width:100%;margin-top:14px;padding:11px 12px;border:1px solid #b3a27f;background:transparent;color:#314a40;text-align:left;font:500 11px var(--sans,Arial,sans-serif);cursor:pointer;transition:background .2s,color .2s,border-color .2s}
+.route-export span{float:right;color:#b64f39;font-size:15px;line-height:10px}
+.route-export:hover:not(:disabled){background:#314a40;color:#f4efe2;border-color:#314a40}
+.route-export:disabled{opacity:.42;cursor:not-allowed}
+.route-export:focus-visible{outline:2px solid #b64f39;outline-offset:3px}
+@media(max-width:600px){.route-export{margin-top:10px}}

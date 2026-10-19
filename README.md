@@ -4,7 +4,7 @@ Interactive route atlas for exploring pathfinding algorithms on a hand-edited gr
 
 ## Русский
 
-PATHLAB превращает поиск пути в исследование карты. Меняйте ландшафт, запускайте алгоритм и наблюдайте, как он открывает клетки, выбирает направление и прокладывает дорогу.
+PATHLAB помогает проверить навигацию до сборки игрового уровня: нарисуйте стены и трудный рельеф, убедитесь, что цель достижима, затем сохраните сетку и найденный маршрут для прототипа. BFS, Дейкстра и A* показывают, где алгоритмы расходятся и как цена клеток меняет выбор пути.
 
 ### Возможности
 
@@ -13,6 +13,8 @@ PATHLAB превращает поиск пути в исследование к�
 - Пошаговый или автоматический запуск с паузой и настройкой скорости.
 - Переключение между движением по четырём и восьми направлениям.
 - Сравнение числа проверенных клеток, длины и реальной стоимости каждого найденного маршрута.
+- Сохранение найденного маршрута, препятствий и дорогих клеток в JSON для прототипа игры или проверки навигации.
+- Координаты JSON отсчитываются от левого верхнего угла с нуля.
 - Управление с клавиатуры: стрелки выбирают клетку, пробел применяет выбранный инструмент, `Ctrl/Cmd + Z` отменяет последнее изменение.
 
 ### Запуск
@@ -25,7 +27,7 @@ PATHLAB превращает поиск пути в исследование к�
 
 ## English
 
-PATHLAB turns pathfinding into a map exploration. Shape the terrain, choose an algorithm, and watch it discover cells, weigh its options, and draw a route.
+PATHLAB helps test game-level navigation before implementation: draw walls and costly terrain, confirm that the goal is reachable, then save the grid and route for a prototype. BFS, Dijkstra, and A* reveal how terrain costs change the chosen path.
 
 ### Features
 
@@ -34,6 +36,8 @@ PATHLAB turns pathfinding into a map exploration. Shape the terrain, choose an a
 - Run automatically or step through the search, pause, and adjust its speed.
 - Switch between four-way and eight-way movement.
 - Compare explored cells, route length, and the actual terrain cost of each route.
+- Export the route, obstacles, and weighted tiles as JSON for a game prototype or navigation test.
+- JSON coordinates start at the top-left tile and are zero-based.
 - Keyboard controls: arrow keys select a cell, Space applies the active tool, and `Ctrl/Cmd + Z` undoes the last edit.
 
 ### Run locally
