@@ -12,24 +12,27 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://thelastie.github.io/pathfinding-visualizer/">
   <meta property="og:locale" content="ru_RU">
-  <meta property="og:title" content="PATHLAB — проверка игровых маршрутов">
-  <meta property="og:description" content="Нарисуйте стены и сложный рельеф, проверьте путь до цели и сохраните готовую сетку для игрового прототипа.">
-  <title>PATHLAB — прототипирование маршрутов для игр</title>
+   <meta property="og:title" content="PATHLAB — проверка игрового уровня">
+   <meta property="og:description" content="Проверьте, достижим ли выход, оцените цену маршрута и скачайте отчёт о проходимости уровня для команды.">
+   <title>PATHLAB — проверка игрового уровня</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="workflow.css?v=1">
   <link rel="stylesheet" href="product-tools.css">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"PATHLAB — прототипирование маршрутов для игр","applicationCategory":"DeveloperApplication","operatingSystem":"Any","inLanguage":"ru","description":"Проверьте доступность выхода, стоимость движения по разному рельефу и экспортируйте игровую сетку вместе с найденным маршрутом в JSON."}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"PATHLAB — проверка игрового уровня","applicationCategory":"DeveloperApplication","operatingSystem":"Any","inLanguage":"ru","description":"Проверьте доступность выхода, цену маршрута по сложному рельефу и скачайте отчёт о проходимости игрового уровня."}</script>
 </head>
 <body>
   <main class="app-shell">
     <header class="topbar">
       <a class="brand" href="./" aria-label="PATHLAB — главная"><span class="brand-symbol" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>pathlab</span></a>
       <div class="topbar-note"><span class="live-dot"></span><span>АТЛАС ПОИСКА ПУТИ</span></div>
+      <button id="importLevelButton" class="reset-link" type="button" aria-label="Импортировать карту из LevelSeed"><span>Импорт уровня</span></button>
+      <input id="levelSeedFile" type="file" accept="application/json,.json" hidden>
       <button id="resetBoard" class="reset-link" type="button"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 9.5a6 6 0 1 1 1.2 4M4 4v5h5"/></svg><span>Новое поле</span></button>
     </header>
     <section class="intro">
-      <div><p class="eyebrow">ПРОТОТИП МАРШРУТА · ИГРОВОЙ УРОВЕНЬ</p><h1>Проверь путь<br class="desktop-break"> до сборки игры.</h1><p class="intro-copy">Нарисуй стены и трудный рельеф. Проверь, достижима ли цель, и сохрани карту с маршрутом для прототипа.</p></div>
-      <aside class="hero-note" aria-label="Одна карта для трёх стратегий"><span>ОДНА КАРТА</span><i></i><span>ТРИ СТРАТЕГИИ</span><strong>BFS <b>·</b> Дейкстра <b>·</b> A*</strong></aside>
+      <div><p class="eyebrow">ПРОВЕРКА ИГРОВОГО УРОВНЯ</p><h1>Проверь уровень<br class="desktop-break"> до сборки.</h1><p class="intro-copy">Импортируй карту или нарисуй свою. Убедись, что игрок дойдёт до выхода, оцени цену маршрута и сохрани отчёт для команды.</p></div>
+      <aside class="hero-note" aria-label="Проверка карты перед сборкой"><span>СВЯЗНОСТЬ</span><i></i><span>ЦЕНА ПУТИ</span><strong>От эскиза к проверяемому уровню</strong></aside>
     </section>
     <section class="workbench" aria-label="Настройки и карта поиска пути">
       <div class="board-panel">
@@ -41,38 +44,47 @@
           <button class="tool-button marker-tool" type="button" data-tool="start" aria-pressed="false"><i class="tool-icon start-icon">S</i>Старт</button>
           <button class="tool-button marker-tool" type="button" data-tool="end" aria-pressed="false"><i class="tool-icon end-icon">E</i>Финиш</button>
         </div><span class="draw-hint" id="drawHint">Нажми и веди, чтобы рисовать</span></div>
-        <div class="grid-frame"><div id="grid" class="grid" role="grid" aria-label="Поле поиска пути. Стрелки выбирают клетку, пробел применяет инструмент." tabindex="0"></div><div class="grid-coordinates" aria-hidden="true"><span>01</span><span>21</span></div></div>
+        <div class="grid-frame"><div id="grid" class="grid" role="grid" aria-label="Поле поиска пути. Стрелки выбирают клетку, пробел применяет инструмент." tabindex="0"></div><div class="grid-coordinates" aria-hidden="true"><span>01</span><span id="gridEndCoordinate">21</span></div></div>
         <div class="legend"><span><i class="legend-start"></i>Старт</span><span><i class="legend-finish"></i>Финиш</span><span><i class="legend-frontier"></i>В очереди</span><span><i class="legend-visited"></i>Проверено</span><span><i class="legend-path"></i>Маршрут</span><span><i class="legend-mud"></i>Цена 5</span></div>
         <div class="board-foot"><span><kbd>← ↑ → ↓</kbd> выбрать клетку · <kbd>Пробел</kbd> рисовать</span><button id="clearBoard" class="clear-board" type="button">Очистить поле</button></div>
+        <p class="import-note" id="importNote" aria-live="polite">Загрузи JSON из LevelSeed: PATHLAB проверит, достижим ли выход, и учтёт ловушки как опасный рельеф.</p>
       </div>
       <aside class="control-panel" aria-label="Параметры поиска">
-        <section class="algorithm-section"><div class="section-heading"><span class="panel-kicker">СТРАТЕГИЯ ПОИСКА</span></div>
-          <div class="algorithm-list" role="group" aria-label="Выбрать алгоритм">
-            <button class="algorithm-option" data-algorithm="bfs" type="button" aria-pressed="false"><span class="algorithm-letter">B</span><span class="algorithm-copy"><strong>BFS</strong><small>Волновой поиск</small></span><span class="algorithm-check">✓</span></button>
-            <button class="algorithm-option" data-algorithm="dijkstra" type="button" aria-pressed="false"><span class="algorithm-letter">D</span><span class="algorithm-copy"><strong>Дейкстра</strong><small>Минимальная цена</small></span><span class="algorithm-check">✓</span></button>
-            <button class="algorithm-option is-selected" data-algorithm="astar" type="button" aria-pressed="true"><span class="algorithm-letter">A</span><span class="algorithm-copy"><strong>A*</strong><small>Цель + цена пути</small></span><span class="algorithm-check">✓</span></button>
-          </div>
-          <p id="algorithmDescription" class="algorithm-description">Оценивает расстояние до финиша и стоимость уже пройденного пути.</p>
-          <label class="diagonal-toggle"><span class="toggle-copy"><strong>Диагональный шаг</strong><small id="diagonalHint">Движение по 4 соседям</small></span><input id="diagonalToggle" type="checkbox"><span class="toggle-track"></span></label>
-        </section>
         <section class="run-section"><div class="section-heading"><span class="panel-kicker">ПРОХОЖДЕНИЕ</span><span id="runStatus" class="run-status"><i></i>ГОТОВ</span></div>
-          <div class="run-buttons"><button id="runButton" class="run-button" type="button"><span class="play-symbol">▶</span><span>Найти путь</span></button><button id="stepButton" class="step-button" type="button" title="Показать следующий шаг" aria-label="Показать следующий шаг">|›</button></div>
+          <div class="run-buttons"><button id="runButton" class="run-button" type="button"><span class="play-symbol">▶</span><span>Проверить уровень</span></button><button id="stepButton" class="step-button" type="button" title="Показать следующий шаг" aria-label="Показать следующий шаг">|›</button></div>
           <button id="pauseButton" class="pause-button" type="button" hidden><span>Ⅱ</span> Пауза</button>
           <div class="speed-row"><label for="speedRange">Скорость</label><input id="speedRange" type="range" min="1" max="12" value="5"><output id="speedValue" for="speedRange">×5</output></div>
           <div class="run-progress"><span id="runProgress"></span></div>
         </section>
-        <section class="result-section"><div class="section-heading"><span class="panel-kicker">ИТОГ ПОИСКА</span></div>
+        <section class="result-section"><div class="section-heading"><span class="panel-kicker">ОТЧЁТ О ПРОХОДИМОСТИ</span></div>
           <h2 class="sr-only">Результат поиска</h2><div class="result-grid"><div class="result-stat"><strong id="visitedCount">0</strong><span>проверено</span></div><div class="result-stat"><strong id="pathLength">—</strong><span id="pathMetricLabel">шагов</span></div><div class="result-stat"><strong id="pathCost">—</strong><span>стоимость</span></div></div>
+          <div id="qaVerdict" class="qa-verdict" data-state="idle" role="status" aria-live="polite">Проверка ещё не запускалась</div>
+          <p id="qaSummary" class="qa-summary">Проверь, соединяет ли маршрут старт с выходом. Для расчёта цены по рельефу используется Дейкстра.</p>
           <p class="result-message" id="resultMessage">Поле готово. Запусти поиск или покажи один шаг.</p>
-          <button class="route-export" id="exportRouteButton" type="button" disabled>Сохранить маршрут для проекта <span aria-hidden="true">↓</span></button>
+          <button class="route-report" id="exportReportButton" type="button" disabled>Скачать отчёт для команды <span aria-hidden="true">↓</span></button>
+          <button class="route-export" id="exportRouteButton" type="button" disabled>Экспортировать маршрут в JSON</button>
         </section>
-        <section class="compare-section"><div class="compare-heading"><div><span class="panel-kicker">СРАВНЕНИЕ</span><h2>Кто найдёт лучше?</h2></div><button id="compareButton" class="compare-trigger" type="button">Сравнить</button></div><p class="compare-help">Сравни проверенные клетки, длину и реальную цену найденного маршрута.</p><div id="comparisonTable" class="comparison-table" hidden></div></section>
+        <details class="method-lab">
+          <summary>Как работает поиск: BFS, Дейкстра, A*</summary>
+          <div class="method-content">
+            <section class="algorithm-section"><div class="section-heading"><span class="panel-kicker">СПОСОБ ПРОВЕРКИ</span></div>
+              <div class="algorithm-list" role="group" aria-label="Выбрать алгоритм">
+                <button class="algorithm-option" data-algorithm="bfs" type="button" aria-pressed="false"><span class="algorithm-letter">B</span><span class="algorithm-copy"><strong>BFS</strong><small>Меньше шагов, без цены рельефа</small></span><span class="algorithm-check">✓</span></button>
+                <button class="algorithm-option is-selected" data-algorithm="dijkstra" type="button" aria-pressed="true"><span class="algorithm-letter">D</span><span class="algorithm-copy"><strong>Дейкстра</strong><small>Самая низкая стоимость пути</small></span><span class="algorithm-check">✓</span></button>
+                <button class="algorithm-option" data-algorithm="astar" type="button" aria-pressed="false"><span class="algorithm-letter">A</span><span class="algorithm-copy"><strong>A*</strong><small>Цена пути с оценкой расстояния</small></span><span class="algorithm-check">✓</span></button>
+              </div>
+              <p id="algorithmDescription" class="algorithm-description">Проверяет сначала клетки с самой низкой суммарной ценой пути.</p>
+              <label class="diagonal-toggle"><span class="toggle-copy"><strong>Диагональный шаг</strong><small id="diagonalHint">Движение по 4 соседям</small></span><input id="diagonalToggle" type="checkbox"><span class="toggle-track"></span></label>
+            </section>
+            <section class="compare-section"><div class="compare-heading"><div><span class="panel-kicker">РАЗБОР МЕТОДОВ</span><h2>Где меняется маршрут?</h2></div><button id="compareButton" class="compare-trigger" type="button">Сравнить</button></div><p class="compare-help">На одной карте покажи, где BFS сокращает шаги, а Дейкстра и A* учитывают сложный рельеф.</p><div id="comparisonTable" class="comparison-table" hidden></div></section>
+          </div>
+        </details>
       </aside>
     </section>
     <footer class="page-footer"><span>PATHLAB <i></i> КАРТА ПОИСКА ПУТИ</span><span>Кликни по клетке или веди курсором, чтобы рисовать</span></footer>
   </main>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="preview-bridge.js" defer></script>
-  <script src="app.js" defer></script>
+  <script src="app.js?v=4" defer></script>
 </body>
 </html>

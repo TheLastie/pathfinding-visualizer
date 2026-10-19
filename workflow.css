@@ -1,0 +1,39 @@
+.import-note {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-left: 2px solid #bf6545;
+  background: #f2eee5;
+  color: #657068;
+  font-size: 12px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+#importLevelButton {
+  color: #a84d31;
+}
+
+#importLevelButton:hover,
+#importLevelButton:focus-visible {
+  color: #76341f;
+}
+
+#importLevelButton:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+#importLevelButton:disabled {
+  cursor: not-allowed;
+  opacity: .45;
+}
+
+@media (max-width: 640px) {
+  .import-note {
+    font-size: 11px;
+  }
+
+  #importLevelButton {
+    font-size: 11px;
+  }
+}

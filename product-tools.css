@@ -4,3 +4,62 @@
 .route-export:disabled{opacity:.42;cursor:not-allowed}
 .route-export:focus-visible{outline:2px solid #b64f39;outline-offset:3px}
 @media(max-width:600px){.route-export{margin-top:10px}}
+.route-report{display:block;width:100%;padding:9px 6px 2px;border:0;background:transparent;color:#e2d6bf;text-align:center;font:10px var(--sans,Arial,sans-serif);text-decoration:underline;text-decoration-color:#8c8a79;text-underline-offset:3px;cursor:pointer}
+.route-report:hover:not(:disabled){color:#fff2d7;text-decoration-color:#fff2d7}
+.route-report:disabled{opacity:.4;cursor:not-allowed;text-decoration:none}
+.route-report:focus-visible{outline:2px solid #d2a968;outline-offset:2px}
+
+/* Product path: validate the level first; open the algorithm lab only when a comparison helps. */
+.control-panel{gap:0}
+.control-panel>.run-section,.control-panel>.result-section{padding:19px 18px}
+.run-section .panel-kicker{font-size:9px}
+.run-button{min-height:46px;font-size:12px;letter-spacing:.01em}
+.step-button{min-height:46px}
+.result-section{background:#34463d}
+.result-section .panel-kicker{color:#e1bd7f}
+.result-section .result-grid{margin-top:14px}
+.result-section .result-stat strong{color:#fff6e7;font-family:Georgia,"Times New Roman",serif;font-size:24px;font-weight:500}
+.result-section .result-stat span{color:#c4c2b6;font-size:9px}
+.result-section .result-stat+.result-stat{border-color:rgba(229,216,186,.2)}
+.qa-verdict{display:flex;align-items:center;gap:8px;margin-top:16px;color:#e6c98e;font-size:13px;font-weight:700}
+.qa-verdict:before{width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:currentColor;content:""}
+.qa-verdict[data-state=pass]{color:#a9c889}
+.qa-verdict[data-state=fail]{color:#eb9b7e}
+.qa-verdict[data-state=checking]{color:#e9bd68}
+.qa-summary{margin:7px 0 0;color:#d0d1c5;font-size:11px;line-height:1.55}
+.result-message{margin-top:10px;color:#c3c2b6}
+.route-report{display:flex;min-height:42px;align-items:center;justify-content:space-between;gap:10px;margin-top:15px;border:1px solid #b6583f;border-radius:2px;padding:0 11px;background:#b6583f;color:#fff5e5;text-align:left;font-size:11px;font-weight:700;text-decoration:none}
+.route-report span{font-size:16px;text-decoration:none}
+.route-report:hover:not(:disabled){background:#c56649;color:#fffaf0;text-decoration:none}
+.route-report:disabled{border-color:#65756a;background:#43534a;color:#aeb8ae;opacity:1}
+.route-export{min-height:34px;margin-top:7px;border-color:rgba(229,216,186,.3);color:#efe5d4;font-size:10px}
+.route-export:hover:not(:disabled){border-color:#e6c98e;background:#e6c98e;color:#27352e}
+.route-export:disabled{opacity:.48}
+.method-lab{border-top:1px solid rgba(229,216,186,.18)}
+.method-lab>summary{position:relative;display:flex;min-height:54px;align-items:center;justify-content:space-between;gap:10px;padding:0 18px;color:#e5d5b4;font-size:10px;font-weight:600;cursor:pointer;list-style:none}
+.method-lab>summary::-webkit-details-marker{display:none}
+.method-lab>summary:after{color:#d0ad75;font-size:17px;font-weight:400;content:"+"}
+.method-lab[open]>summary:after{content:"−"}
+.method-lab>summary:focus-visible{outline:2px solid #d2a968;outline-offset:-4px}
+.method-content{border-top:1px solid rgba(229,216,186,.12);padding:0 18px 16px}
+.method-content .algorithm-section,.method-content .compare-section{padding:15px 0 0}
+.method-content .algorithm-list{margin-top:8px}
+.method-content .algorithm-option{min-height:41px}
+.method-content .algorithm-copy small{color:#c4c2b6;font-size:9px}
+.method-content .algorithm-description{min-height:0;margin:8px 0 12px;color:#c4c2b6}
+.method-content .diagonal-toggle{border-color:rgba(229,216,186,.17)}
+.method-content .compare-section{margin-top:14px;border-top:1px solid rgba(229,216,186,.15)}
+.method-content .compare-help{color:#c4c2b6}
+.method-content .compare-trigger{border-color:rgba(229,216,186,.35);background:transparent;color:#f0e4cc}
+.method-content .compare-trigger:hover{background:#43534a}
+.method-content .comparison-table{color:#f4eddf}
+.method-content .compare-row{border-color:rgba(229,216,186,.15)}
+.method-content .compare-row.header{color:#c4c2b6}
+
+@media(max-width:600px){
+  .control-panel>.run-section,.control-panel>.result-section{padding:16px 14px}
+  .method-lab>summary{min-height:50px;padding:0 14px;font-size:9px}
+  .method-content{padding:0 14px 14px}
+  .qa-summary{font-size:10px}
+  .route-report{font-size:10px}
+}

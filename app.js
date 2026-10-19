@@ -1,9 +1,9 @@
 (() => {
   'use strict';
 
-  const COLS = 21;
-  const ROWS = 13;
-  const TOTAL = COLS * ROWS;
+  let COLS = 21;
+  let ROWS = 13;
+  let TOTAL = COLS * ROWS;
   const WEIGHT = 5;
   const $ = selector => document.querySelector(selector);
   const $$ = selector => [...document.querySelectorAll(selector)];
@@ -21,7 +21,7 @@
   };
 
   let board = starterBoard();
-  let algorithm = 'astar';
+  let algorithm = 'dijkstra';
   let diagonal = false;
   let tool = 'wall';
   let search = null;
@@ -67,6 +67,7 @@
     stopTimer();
     search = null;
     $('#exportRouteButton').disabled = true;
+    $('#exportReportButton').disabled = true;
     eventIndex = 0;
     visual.frontier.clear(); visual.visited.clear(); visual.path.clear();
     setStatus('ready');
@@ -77,8 +78,15 @@
     $pause.hidden = true;
     $run.hidden = false;
     $run.classList.remove('is-running');
-    $run.innerHTML = '<span class="play-symbol" aria-hidden="true">▶</span><span>Найти путь</span>';
-    $message.textContent = 'Поле готово. Запусти поиск или покажи один шаг.';
+    $run.innerHTML = '<span class="play-symbol" aria-hidden="true">▶</span><span>Проверить уровень</span>';
+    $message.textContent = 'Поле готово. Запусти проверку или покажи один шаг.';
+    setQaSummary('idle', 'Проверка ещё не запускалась', 'Проверь, соединяет ли маршрут старт с выходом. Для расчёта цены по рельефу используется Дейкстра.');
+  }
+  function setQaSummary(state, verdict, summary) {
+    const $verdict = $('#qaVerdict');
+    $verdict.dataset.state = state;
+    $verdict.textContent = verdict;
+    $('#qaSummary').textContent = summary;
   }
   function stopTimer() { if (timer) clearTimeout(timer); timer = 0; }
   function setStatus(name) {
@@ -112,8 +120,11 @@
   }
   function renderGrid() {
     $grid.replaceChildren();
+    $grid.style.gridTemplateColumns = `repeat(${COLS}, minmax(0, 1fr))`;
     $grid.setAttribute('aria-rowcount', String(ROWS));
     $grid.setAttribute('aria-colcount', String(COLS));
+    $('#boardDimensions').textContent = `${COLS} × ${ROWS}`;
+    $('#gridEndCoordinate').textContent = String(COLS).padStart(2, '0');
     $grid.dataset.tool = tool;
     for (let id = 0; id < TOTAL; id += 1) {
       const cell = document.createElement('div');
@@ -237,6 +248,7 @@
     search = solve(algorithm);
     visual.frontier.add(board.start);
     $message.textContent = `${algorithms[algorithm].name} исследует поле…`;
+    setQaSummary('checking', 'Проверяем связность…', `${algorithms[algorithm].name} проходит карту. Итог и отчёт появятся после завершения проверки.`);
     setStatus('ready');
     updateMetrics(null);
     renderGrid();
@@ -256,13 +268,23 @@
   }
   function finishSearch() {
     stopTimer(); $pause.hidden = true; $run.hidden = false; $run.classList.remove('is-running');
-    $run.innerHTML = '<span class="play-symbol" aria-hidden="true">↻</span><span>Искать снова</span>';
+    $run.innerHTML = '<span class="play-symbol" aria-hidden="true">↻</span><span>Проверить ещё раз</span>';
     search.complete = true;
     updateMetrics(search);
     setStatus(search?.found ? 'done' : 'error');
     if (search?.found) $message.textContent = `${algorithms[algorithm].name}: ${search.expanded} клеток проверено · маршрут ${search.path.length - 1} шагов · цена ${formatCost(search.cost)}.`;
     else $message.textContent = 'Маршрут не найден. Измени карту и попробуй снова.';
+    const walkable = TOTAL - board.walls.size;
+    const unreachable = Math.max(0, walkable - search.expanded);
+    setQaSummary(
+      search.found ? 'pass' : 'fail',
+      search.found ? 'Уровень проходим' : 'Выход отрезан от старта',
+      search.found
+        ? `Выход достижим. Маршрут: ${search.path.length - 1} шагов, цена ${formatCost(search.cost)}. В расчёте ${board.mud.size} клеток с повышенной ценой.`
+        : `Недостижимых проходимых клеток: ${unreachable} из ${walkable}. Проверь стены и соединения между зонами.`
+    );
     $('#exportRouteButton').disabled = !search?.found;
+    $('#exportReportButton').disabled = !search?.complete;
   }
   function exportRoute() {
     if (!search?.complete || !search.found) return;
@@ -285,6 +307,79 @@
     link.download = 'pathlab-route.json';
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  function exportValidationReport() {
+    if (!search?.complete) return;
+    const walkable = COLS * ROWS - board.walls.size;
+    const unreachable = search.found ? null : Math.max(0, walkable - search.expanded);
+    const route = search.found ? search.path.map(id => {
+      const { x, y } = xy(id);
+      return `(${x}, ${y})`;
+    }).join(' → ') : 'Не найден';
+    const lines = [
+      '# PATHLAB — отчёт проверки уровня',
+      '',
+      `**Результат:** ${search.found ? 'ПРОХОДИМ — путь от старта до выхода найден' : 'НЕ ПРОХОДИМ — выход недостижим'}`,
+      '',
+      '## Условия проверки',
+      `- Размер сетки: ${COLS} × ${ROWS} клеток`,
+      `- Движение: ${diagonal ? '8 направлений (диагональный шаг стоит √2)' : '4 направления'}`,
+      `- Старт: (${xy(board.start).x}, ${xy(board.start).y})`,
+      `- Выход: (${xy(board.end).x}, ${xy(board.end).y})`,
+      `- Алгоритм проверки: ${algorithms[algorithm].name}`,
+      `- Стены: ${board.walls.size}`,
+      `- Проходимые клетки: ${walkable}`,
+      `- Клетки сложного рельефа: ${board.mud.size} (цена каждой — ${WEIGHT})`,
+      '',
+      '## Найденный результат',
+      `- Проверено клеток: ${search.expanded}`,
+      `- Длина маршрута: ${search.found ? `${search.path.length - 1} шагов` : '—'}`,
+      `- Стоимость маршрута: ${search.found ? `${formatCost(search.cost)} условных единиц` : '—'}`,
+      `- Маршрут: ${route}`,
+      ...(unreachable === null ? [] : [`- Доступные клетки, не достижимые от старта: ${unreachable}`]),
+      ...(unreachable === null ? [] : [`- Доля недостижимых проходимых клеток: ${walkable ? (unreachable / walkable * 100).toFixed(1) : '0.0'}%`]),
+      '',
+      '## Карта',
+      '- Координаты в отчёте начинаются с нуля; начало сетки — в левом верхнем углу.',
+      `- Стены: ${[...board.walls].map(id => { const { x, y } = xy(id); return `(${x}, ${y})`; }).join(', ') || 'нет'}`,
+      `- Сложный рельеф: ${[...board.mud].map(id => { const { x, y } = xy(id); return `(${x}, ${y})`; }).join(', ') || 'нет'}`,
+      '',
+      '> Проверка описывает только связность клеточной карты и выбранную стоимость шага. Она не заменяет тестирование коллизий, навигации и поведения персонажа в игровом движке.'
+    ];
+    const blob = new Blob([lines.join('\n')], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'pathlab-level-check.md';
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  async function importLevelSeed(file) {
+    try {
+      const data = JSON.parse(await file.text());
+      const columns = Number(data.columns), rows = Number(data.rows);
+      if (data.format !== 'levelseed-map-v1' || !Number.isInteger(columns) || !Number.isInteger(rows) || columns < 3 || rows < 3 || columns > 64 || rows > 40) throw new Error('PATHLAB принимает карты LevelSeed размером до 64 × 40 клеток.');
+      if (!Array.isArray(data.tiles) || data.tiles.length !== rows || data.tiles.some(row => !Array.isArray(row) || row.length !== columns || row.some(tile => !Number.isFinite(tile) || tile < 0))) throw new Error('Сетка в файле повреждена. Скачай карту заново из LevelSeed.');
+      const validPoint = point => point && Number.isInteger(point.x) && Number.isInteger(point.y) && point.x >= 0 && point.x < columns && point.y >= 0 && point.y < rows && data.tiles[point.y][point.x] > 0;
+      if (!validPoint(data.start) || !validPoint(data.finish) || (data.start.x === data.finish.x && data.start.y === data.finish.y)) throw new Error('В файле не найдены корректные клетки старта и выхода.');
+
+      COLS = columns; ROWS = rows; TOTAL = COLS * ROWS;
+      const start = cellId(data.start.x, data.start.y), end = cellId(data.finish.x, data.finish.y);
+      const walls = new Set(), mud = new Set();
+      data.tiles.forEach((row, y) => row.forEach((tile, x) => { if (tile === 0) walls.add(cellId(x, y)); }));
+      (Array.isArray(data.hazards) ? data.hazards : []).forEach(point => {
+        if (validPoint(point)) { const id = cellId(point.x, point.y); if (id !== start && id !== end) mud.add(id); }
+      });
+      walls.delete(start); walls.delete(end); mud.delete(start); mud.delete(end);
+      board = { start, end, walls, mud };
+      undoStack.length = 0;
+      clearSearch();
+      renderGrid();
+      $('#importNote').textContent = `${data.title || 'Карта LevelSeed'} · ${columns} × ${rows} · ловушки отмечены как опасный рельеф ×5. Запусти поиск, чтобы проверить путь до выхода.`;
+      $message.textContent = 'Уровень загружен. Теперь можно проверить его проходимость и сравнить стратегии.';
+    } catch (error) {
+      $('#importNote').textContent = error instanceof Error ? error.message : 'Не удалось прочитать файл карты.';
+    }
   }
   function runTick() {
     const batch = Math.max(1, Math.ceil(Number($('#speedRange').value) / 3));
@@ -404,6 +499,12 @@
   $grid.addEventListener('pointercancel',pointerUp);
   window.addEventListener('pointerup',pointerUp);
   $grid.addEventListener('keydown',keyboardGrid);
+  $('#importLevelButton').addEventListener('click',() => $('#levelSeedFile').click());
+  $('#levelSeedFile').addEventListener('change',event => {
+    const [file] = event.target.files || [];
+    if (file) importLevelSeed(file);
+    event.target.value = '';
+  });
   $$('.tool-button').forEach(button => button.addEventListener('click',() => setTool(button.dataset.tool)));
   $$('.algorithm-option').forEach(button => button.addEventListener('click',() => {
     algorithm = button.dataset.algorithm;
@@ -423,6 +524,7 @@
   $step.addEventListener('click',singleStep);
   $('#compareButton').addEventListener('click',compareAlgorithms);
   $('#exportRouteButton').addEventListener('click',exportRoute);
+  $('#exportReportButton').addEventListener('click',exportValidationReport);
   $('#clearBoard').addEventListener('click',clearBoard);
   $('#resetBoard').addEventListener('click',randomBoard);
   window.addEventListener('keydown',event => {
