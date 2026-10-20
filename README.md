@@ -25,7 +25,7 @@ PATHLAB помогает дизайнеру уровня проверить ка
 
 ### Скриншот
 
-![PATHLAB: исследование маршрута на сетке](screenshots/pathfinding-visualizer.png)
+![PATHLAB: проверка проходимости уровня и отчёт для команды](screenshots/pathlab-level-report.png)
 
 ## English
 
@@ -50,7 +50,7 @@ No build step or dependencies are required. Open `index.html` in a browser or de
 
 ### Screenshot
 
-![PATHLAB route exploration on a grid](screenshots/pathfinding-visualizer.png)
+![PATHLAB level validation and team review report](screenshots/pathlab-level-report.png)
 
 ## Design idea
 
