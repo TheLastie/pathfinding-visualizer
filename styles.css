@@ -50,3 +50,7 @@ h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(40px,5.2vw,66px);
 .legend-start{background:#3d7460}
 /* Match the map marker and legend swatch to the same cartographic color. */
 .cell.is-start{border-color:#285542;background:#3d7460;color:#fff8e8}
+
+.goal-icon{border:1px solid #bd684b;border-radius:50%;background:#f7e3d5;color:#8e3d2c;font-size:8px;font-weight:700}
+.cell.is-goal{z-index:2;border:2px solid #a94a32;border-radius:50%;background:#f6dfcf;color:#71321f;font-size:clamp(6px,.7vw,9px);font-weight:800;box-shadow:0 0 0 2px rgba(255,247,230,.8)}
+.legend-goal{border:1px solid #a94a32;border-radius:50%;background:#f6dfcf}
