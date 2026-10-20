@@ -63,3 +63,14 @@
   .qa-summary{font-size:10px}
   .route-report{font-size:10px}
 }
+
+@media(max-width:360px){
+  .control-panel{min-width:0;width:100%}
+  .control-panel>section{min-width:0}
+  .section-heading,.compare-heading{min-width:0;gap:8px;flex-wrap:wrap}
+  .result-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .result-stat{min-width:0}
+  .result-stat strong,.result-stat span{min-width:0;overflow-wrap:anywhere}
+  .qa-verdict{flex-wrap:wrap;font-size:12px;line-height:1.35}
+  .comparison-table,.compare-row{min-width:0}
+}
